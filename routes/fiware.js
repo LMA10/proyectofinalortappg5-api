@@ -2,8 +2,8 @@ var express = require("express");
 var router = express.Router();
 const auth = require("../middleware/auth");
 const NGSI = require("ngsijs");
-
-const connection = new NGSI.Connection("http://localhost:1026");
+const conVM = process.env.URL_VM_ORION
+const connection = new NGSI.Connection(`${conVM}`);
 
 router.get("/entities", auth, async (req, res, next) => {
   let arr = [];
