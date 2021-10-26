@@ -21,4 +21,28 @@ router.get("/entities/:id", auth, async (req, res) => {
   });
 });
 
+
+router.get("/entities/type/:type", auth, async (req, res) => {
+  let arr = [];
+  let type=req.params.type
+  await connection.v2.listEntities({type:type}).then((response) => {
+    response.results.forEach((entity) => {
+      arr.push(entity);
+    });
+  });
+  res.send(arr);
+});
+router.get("/entities/query/:query", auth, async (req, res) => {
+  let arr = [];
+  let query=req.params.query
+  await connection.v2.listEntities({q:query}).then((response) => {
+    response.results.forEach((entity) => {
+      arr.push(entity);
+    });
+  });
+  res.send(arr);
+});
+
+
+
 module.exports = router;
