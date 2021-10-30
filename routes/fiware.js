@@ -48,7 +48,7 @@ router.get("/entities/query/:query", auth, async (req, res) => {
 });
 
 
-router.post("/entities/add/add", auth, async (req, res) => {
+router.post("/entities/add", auth, async (req, res) => {
 
   let id = uuidv4()
   let body = {
