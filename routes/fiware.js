@@ -3,6 +3,7 @@ var express = require("express");
 var router = express.Router();
 const auth = require("../middleware/auth");
 const NGSI = require("ngsijs");
+const moment = require("moment");
 
 
 // const conVM = process.env.URL_VM_ORION
@@ -79,10 +80,27 @@ router.post("/entities/add", auth, async (req, res) => {
      "type" : "Text",
      "value" : req.body.descripcion
    }
+   body.data = {
+     "type" : "Integer",
+     "value" : 0
+   }
+   body.indicatorDate = {
+     "type" : "DateTime",
+     "value" : moment(Date()).format('YYYY-MM-DDThh:mm:ss.ssZ')
+   }
+   body.goal = {
+     "type" : "Integer",
+     "value" : 0
+   }
+   body.goalDate = {
+    "type" : "DateTime",
+    "value" : moment(Date()).format('YYYY-MM-DDThh:mm:ss.ssZ')
+  }
   body.refSubEje = {
     "type": "Relationship",
     "value": req.body.id,
   }
+
   
 }
   await connection.v2.createEntity(body).then((response) => {
