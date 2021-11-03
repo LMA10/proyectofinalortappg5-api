@@ -178,7 +178,7 @@ router.post("/entities/add", auth, asyncWrapper (async (req, res) => {
 
 
 
-router.put("/entities/add/goal", auth, async (req, res) => {
+router.put("/entities/change/goal", auth, async (req, res) => {
   await connection.v2.updateEntityAttributes({
     "id": req.body.id,
     "goal": {
@@ -195,6 +195,18 @@ router.put("/entities/add/goal", auth, async (req, res) => {
 });
 
 
+router.put("/entities/load/dataIndicator", auth, async (req, res) => {
+  await connection.v2.updateEntityAttributes({
+
+    "id": req.body.id,
+    "data": {
+      "type": "Integer",
+      "value": req.body.actMonto,
+    }
+  }).then((response) => {
+    res.status(200).send(response)
+  })
+});
 router.put("/entities/update", auth, asyncWrapper (async (req, res) => { 
     const response = await connection.v2.updateEntityAttributes({
       id: req.body.id,
