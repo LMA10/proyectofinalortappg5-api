@@ -177,20 +177,32 @@ router.post("/entities/add", auth, async (req, res) => {
 
 router.put("/entities/add/goal", auth, async (req, res) => {
   await connection.v2.updateEntityAttributes({
-    "id":req.body.id,
-    "goal":{
-      "type":"Integer",
-      "value":req.body.monto,
+    "id": req.body.id,
+    "goal": {
+      "type": "Integer",
+      "value": req.body.monto,
     },
-    "goalDate":{
-      "type":"DateTime",
-      "value":moment((req.body.fecha)).format('YYYY-MM-DDThh:mm:ss.ssZ')
+    "goalDate": {
+      "type": "DateTime",
+      "value": moment((req.body.fecha)).format('YYYY-MM-DDThh:mm:ss.ssZ')
     }
-  }).then((response)=>{
+  }).then((response) => {
     res.status(200).send(response)
   })
 });
 
+
+router.put("/entities/update", auth, async (req, res) => { 
+    const response = await connection.v2.updateEntityAttributes({
+      id: req.body.id,
+      ...(req.body.name ? { name: { type: "Text", value: req.body.name } } : {}),
+      ...(req.body.indicatorType ? { indicatorType: { type: "Text", value: req.body.indicatorType } } : {}),
+      ...(req.body.description ? { description: { type: "Text", value: req.body.description } } : {})
+    })
+
+    res.status(200).send(response)
+  
+})
 
 
 module.exports = router;
