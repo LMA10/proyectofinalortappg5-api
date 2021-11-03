@@ -6,9 +6,8 @@ const NGSI = require("ngsijs");
 const moment = require("moment");
 const { response } = require('express');
 
-
-// const conVM = process.env.URL_VM_ORION
-const conVM = process.env.URL_LOCAL_ORION //LOCAL
+const conVM = process.env.URL_VM_ORION
+//const conVM = process.env.URL_LOCAL_ORION //LOCAL
 const connection = new NGSI.Connection(`${conVM}`);
 
 router.get("/entities", auth, async (req, res, next) => {
