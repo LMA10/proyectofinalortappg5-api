@@ -7,8 +7,8 @@ const moment = require("moment");
 const { response } = require("express");
 const data = require("../data/indicator");
 
-const conVM = process.env.URL_VM_ORION;
-// const conVM = process.env.URL_LOCAL_ORION
+// const conVM = process.env.URL_VM_ORION
+const conVM = process.env.URL_LOCAL_ORION //LOCAL
 const connection = new NGSI.Connection(`${conVM}`);
 
 router.get("/entities", auth, async (req, res, next) => {
@@ -172,5 +172,25 @@ router.post("/entities/add", auth, async (req, res) => {
     res.status(200).send(response.entity);
   });
 });
+
+
+
+router.put("/entities/add/goal", auth, async (req, res) => {
+  await connection.v2.updateEntityAttributes({
+    "id":req.body.id,
+    "goal":{
+      "type":"Integer",
+      "value":req.body.monto,
+    },
+    "goalDate":{
+      "type":"DateTime",
+      "value":moment((req.body.fecha)).format('YYYY-MM-DDThh:mm:ss.ssZ')
+    }
+  }).then((response)=>{
+    res.status(200).send(response)
+  })
+});
+
+
 
 module.exports = router;
