@@ -6,12 +6,15 @@ const NGSI = require("ngsijs");
 const moment = require("moment");
 const { response } = require("express");
 const data = require("../data/indicator");
+const asyncWrapper = (cb) => {
+  return (req, res, next) => cb(req, res, next).catch(next);
+};
 
 // const conVM = process.env.URL_VM_ORION
 const conVM = process.env.URL_LOCAL_ORION //LOCAL
 const connection = new NGSI.Connection(`${conVM}`);
 
-router.get("/entities", auth, async (req, res, next) => {
+router.get("/entities", auth,  async (req, res, next) => {
   let arr = [];
   await connection.v2.listEntities({ limit: 100 }).then((response) => {
     response.results.forEach((entity) => {
@@ -48,7 +51,7 @@ router.get("/entities/query/:query", auth, async (req, res) => {
   res.send(arr);
 });
 
-router.delete("/entities", auth, async (req, res) => {
+router.delete("/entities", auth, asyncWrapper (async (req, res) => {
   let id = req.body.id;
   let type = req.body.type;
   let respuesta;
@@ -116,9 +119,9 @@ router.delete("/entities", auth, async (req, res) => {
     });
   }
   res.status(200).send(respuesta);
-});
+}));
 
-router.post("/entities/add", auth, async (req, res) => {
+router.post("/entities/add", auth, asyncWrapper (async (req, res) => {
   let id = uuidv4();
   let body = {
     id: "urn:ngsi-ld:" + req.body.type + ":" + id,
@@ -171,26 +174,38 @@ router.post("/entities/add", auth, async (req, res) => {
   await connection.v2.createEntity(body).then((response) => {
     res.status(200).send(response.entity);
   });
-});
+}));
 
 
 
 router.put("/entities/add/goal", auth, async (req, res) => {
   await connection.v2.updateEntityAttributes({
-    "id":req.body.id,
-    "goal":{
-      "type":"Integer",
-      "value":req.body.monto,
+    "id": req.body.id,
+    "goal": {
+      "type": "Integer",
+      "value": req.body.monto,
     },
-    "goalDate":{
-      "type":"DateTime",
-      "value":moment((req.body.fecha)).format('YYYY-MM-DDThh:mm:ss.ssZ')
+    "goalDate": {
+      "type": "DateTime",
+      "value": moment((req.body.fecha)).format('YYYY-MM-DDThh:mm:ss.ssZ')
     }
-  }).then((response)=>{
+  }).then((response) => {
     res.status(200).send(response)
   })
 });
 
+
+router.put("/entities/update", auth, asyncWrapper (async (req, res) => { 
+    const response = await connection.v2.updateEntityAttributes({
+      id: req.body.id,
+      ...(req.body.name ? { name: { type: "Text", value: req.body.name } } : {}),
+      ...(req.body.indicatorType ? { indicatorType: { type: "Text", value: req.body.indicatorType } } : {}),
+      ...(req.body.description ? { description: { type: "Text", value: req.body.description } } : {})
+    })
+
+    res.status(200).send(response)
+  
+}))
 
 
 module.exports = router;
