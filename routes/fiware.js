@@ -6,7 +6,6 @@ const NGSI = require("ngsijs");
 const moment = require("moment");
 const { response } = require('express');
 
-
 // const conVM = process.env.URL_VM_ORION
 const conVM = process.env.URL_LOCAL_ORION //LOCAL
 const connection = new NGSI.Connection(`${conVM}`);
@@ -163,6 +162,23 @@ router.post("/entities/add", auth, async (req, res) => {
 
 });
 
+
+
+router.put("/entities/add/goal", auth, async (req, res) => {
+  await connection.v2.updateEntityAttributes({
+    "id":req.body.id,
+    "goal":{
+      "type":"Integer",
+      "value":req.body.monto,
+    },
+    "goalDate":{
+      "type":"DateTime",
+      "value":moment((req.body.fecha)).format('YYYY-MM-DDThh:mm:ss.ssZ')
+    }
+  }).then((response)=>{
+    res.status(200).send(response)
+  })
+});
 
 
 
