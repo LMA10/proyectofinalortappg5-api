@@ -1,7 +1,7 @@
 const connection = require("./connection");
 const indicatorModel = require("./schemas/indicator");
 
-async function getAllIndicators() {
+async function getHistoricalIndicators() {
   await connection.getConnection();
   const indicators = await indicatorModel.IndicatorModel.find({});
   return indicators;
@@ -22,4 +22,4 @@ async function getIndicator(indicatorId) {
   return indicatorById;
 }
 
-module.exports = { getAllIndicators, addIndicator, getIndicator };
+module.exports = { getHistoricalIndicators, addIndicator, getIndicator };

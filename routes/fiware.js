@@ -5,7 +5,8 @@ const auth = require("../middleware/auth");
 const NGSI = require("ngsijs");
 const moment = require("moment");
 const { response } = require("express");
-const data = require("../data/indicator");
+const fiwareData = require("../data/indicator");
+
 const asyncWrapper = (cb) => {
   return (req, res, next) => cb(req, res, next).catch(next);
 };
@@ -28,6 +29,11 @@ router.get("/entities/:id", auth, async (req, res) => {
   await connection.v2.getEntity(req.params.id).then((response) => {
     res.status(200).send(response);
   });
+});
+
+router.get("/historical", auth, async (req, res) => {
+  const historical = await fiwareData.getHistoricalIndicators();
+  res.send(historical);
 });
 
 router.get("/entities/type/:type", auth, async (req, res) => {
@@ -199,6 +205,7 @@ router.put("/entities/change/goal", auth, async (req, res) => {
       },
     })
     .then((response) => {
+      addHistoricalValue(req.body.id);
       res.status(200).send(response);
     });
 });
@@ -220,6 +227,7 @@ router.put("/entities/load/dataIndicator", auth, async (req, res) => {
       },
     })
     .then((response) => {
+      addHistoricalValue(req.body.id);
       res.status(200).send(response);
     });
 });
@@ -240,11 +248,49 @@ router.put(
         ? { description: { type: "Text", value: req.body.description } }
         : {}),
     });
-    console.log(res);
     res.status(200).send(response);
   })
 );
 
+async function addHistoricalValue(entityId) {
+  let today = new Date();
+  let date =
+    today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
+  let time =
+    today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+
+  const indicator = await connection.v2
+    .getEntity({ id: entityId, keyValues: true })
+    .then((response) => {
+      return response.entity;
+    });
+
+  const subEje = await connection.v2
+    .getEntity({ id: indicator.refSubEje, keyValues: true })
+    .then((res) => {
+      return res.entity;
+    });
+
+  const eje = await connection.v2
+    .getEntity({ id: subEje.refEje, keyValues: true })
+    .then((res) => {
+      return res.entity;
+    });
+
+  const newValue = {
+    refEje: eje.name,
+    refSubEje: subEje.name,
+    indicatorName: indicator.name,
+    data: indicator.data,
+    indicatorDate: `${date}`,
+    goal: indicator.goal,
+    goalDate: indicator.goalDate,
+  };
+
+  fiwareData.addIndicator(newValue);
+}
+
+//Endpoins Grafico
 router.get("/graph/labels/:id", auth, async (req, res) => {
   const id = req.params.id;
   const arrDatos = await buscarMunicipio(id).then((response) => {
@@ -252,6 +298,26 @@ router.get("/graph/labels/:id", auth, async (req, res) => {
   });
   res.status(200).send(arrDatos);
 });
+
+router.get("/graph/subEjes/:id", auth, async (req, res) => {
+  const id = req.params.id;
+  const subEjes = await buscarSubEjes(id).then((response) => {
+    return response;
+  });
+  res.status(200).send(subEjes);
+});
+
+router.get("/graph/data/:id/:refEje", auth, async (req, res) => {
+  const id = req.params.id;
+  const refEje = req.params.refEje;
+  const datos = await dataSubEjes(id).then((res) => {
+    return res;
+  });
+  const respuesta = { refEje: refEje, kpi: datos };
+  res.status(200).send(respuesta);
+});
+
+// Funciones Auxiliares graficos(habira que mandarlas a otro archivo y exportarlas)
 
 const buscarMunicipio = async (id) => {
   const arr = [];
@@ -270,54 +336,34 @@ const dataMunicipio = async (municipio, arr) => {
   });
 };
 
-router.get("/graph/subEjes/:id", auth, async (req, res) => {
-  const id = req.params.id;
-  const subEjes = await buscarSubEjes(id).then((response) => {
-    return response;
-  });
-  //const dato = await dataSubEjes(eje).then(response=>{ return response})
-  console.log(subEjes);
-
-  res.status(200).send(subEjes);
-});
-
 const buscarSubEjes = async (id) => {
   const subEjes = await connection.v2
     .listEntities({ q: id })
     .then((response) => {
       return response.results;
     });
-  const data = subEjes.map((subEje) =>{return{refEje:id, id:"refSubEje==" + subEje.id}});
+  const data = subEjes.map((subEje) => {
+    return { refEje: id, id: "refSubEje==" + subEje.id };
+  });
   return data;
 };
 
 const dataSubEjes = async (id) => {
-
   const datoKpi = await connection.v2
     .listEntities({ q: id })
     .then((response) => {
-      return kpi (response.results);
+      return kpi(response.results);
     });
-   
-return datoKpi
+
+  return datoKpi;
 };
 
 const kpi = (arrayIndicador) => {
   var promedio = 0;
   arrayIndicador.forEach((i) => {
-    promedio += ((i.data.value *100) /  i.goal.value);
+    promedio += (i.data.value * 100) / i.goal.value;
   });
   return promedio / arrayIndicador.length;
 };
 
-router.get("/graph/data/:id/:refEje", auth, async (req, res) => {
-  const id = req.params.id;
-  const refEje= req.params.refEje
-  const datos = await dataSubEjes(id).then((res) => {
-    return res;
-  });
-  console.log(datos);
-  const respuesta ={refEje: refEje, kpi:datos}
-  res.status(200).send(respuesta);
-});
 module.exports = router;
