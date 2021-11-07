@@ -5,7 +5,8 @@ const auth = require("../middleware/auth");
 const NGSI = require("ngsijs");
 const moment = require("moment");
 const { response } = require("express");
-const data = require("../data/indicator");
+const fiwareData = require("../data/indicator");
+
 const asyncWrapper = (cb) => {
   return (req, res, next) => cb(req, res, next).catch(next);
 };
@@ -28,6 +29,11 @@ router.get("/entities/:id", auth, async (req, res) => {
   await connection.v2.getEntity(req.params.id).then((response) => {
     res.status(200).send(response);
   });
+});
+
+router.get("/historical", auth, async (req, res) => {
+  const historical = await fiwareData.getHistoricalIndicators();
+  res.send(historical);
 });
 
 router.get("/entities/type/:type", auth, async (req, res) => {
@@ -199,6 +205,7 @@ router.put("/entities/change/goal", auth, async (req, res) => {
       },
     })
     .then((response) => {
+      addHistoricalValue(req.body.id);
       res.status(200).send(response);
     });
 });
@@ -220,6 +227,7 @@ router.put("/entities/load/dataIndicator", auth, async (req, res) => {
       },
     })
     .then((response) => {
+      addHistoricalValue(req.body.id)
       res.status(200).send(response);
     });
 });
@@ -244,5 +252,49 @@ router.put(
     res.status(200).send(response);
   })
 );
+
+async function addHistoricalValue(entityId) {
+
+  let today = new Date();   
+  let date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+  let time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+
+  const indicator = await connection.v2
+    .getEntity({ id: entityId, keyValues: true })
+    .then((response) => {
+      return response.entity;
+    });
+  // console.log("---Entidad---");
+  // console.log(indicator);
+  const subEje = await connection.v2
+    .getEntity({ id: indicator.refSubEje, keyValues: true })
+    .then((res) => {
+      return res.entity;
+    });
+  // console.log("---subEje---");
+  // console.log(subEje);
+  const eje = await connection.v2
+    .getEntity({ id: subEje.refEje, keyValues: true })
+    .then((res) => {
+      return res.entity;
+    });
+  // console.log("---Eje---");
+  // console.log(eje);
+
+  const newValue = {
+    refEje: eje.name,
+    refSubEje: subEje.name,
+    indicatorName: indicator.name,
+    data: indicator.data,
+    indicatorDate: `${date}`,
+    goal: indicator.goal,
+    goalDate: indicator.goalDate,
+  };
+
+  // console.log("NEW VALUE TO SAVE");
+  // console.log(newValue);
+
+  fiwareData.addIndicator(newValue);
+}
 
 module.exports = router;

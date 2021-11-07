@@ -1,16 +1,12 @@
 const { Schema, model } = require("mongoose");
 
 const indicatorSchema = new Schema({
-  name: {
+  indicatorName: {
     type: String,
     required: true,
   },
   data: {
     type: Number,
-    required: true,
-  },
-  description: {
-    type: String,
     required: true,
   },
   goal: {
@@ -25,11 +21,11 @@ const indicatorSchema = new Schema({
     type: Date,
     required: true,
   },
-  indicatorType: {
-    type: String,
-    required: true,
-  },
   refSubEje : {
+    type: String,
+    required: true
+  },
+  refEje : {
     type: String,
     required: true
   }
