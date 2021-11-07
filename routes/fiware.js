@@ -245,4 +245,79 @@ router.put(
   })
 );
 
+router.get("/graph/labels/:id", auth, async (req, res) => {
+  const id = req.params.id;
+  const arrDatos = await buscarMunicipio(id).then((response) => {
+    return response;
+  });
+  res.status(200).send(arrDatos);
+});
+
+const buscarMunicipio = async (id) => {
+  const arr = [];
+  const muni = await connection.v2
+    .listEntities({ q: "refMunicipio==" + id })
+    .then((response) => {
+      return response.results;
+    });
+  await dataMunicipio(muni, arr);
+  return arr;
+};
+
+const dataMunicipio = async (municipio, arr) => {
+  await municipio.forEach((eje) => {
+    arr.push({ label: eje.name.value, id: "refEje==" + eje.id });
+  });
+};
+
+router.get("/graph/subEjes/:id", auth, async (req, res) => {
+  const id = req.params.id;
+  const subEjes = await buscarSubEjes(id).then((response) => {
+    return response;
+  });
+  //const dato = await dataSubEjes(eje).then(response=>{ return response})
+  console.log(subEjes);
+
+  res.status(200).send(subEjes);
+});
+
+const buscarSubEjes = async (id) => {
+  const subEjes = await connection.v2
+    .listEntities({ q: id })
+    .then((response) => {
+      return response.results;
+    });
+  const data = subEjes.map((subEje) =>{return{refEje:id, id:"refSubEje==" + subEje.id}});
+  return data;
+};
+
+const dataSubEjes = async (id) => {
+
+  const datoKpi = await connection.v2
+    .listEntities({ q: id })
+    .then((response) => {
+      return kpi (response.results);
+    });
+   
+return datoKpi
+};
+
+const kpi = (arrayIndicador) => {
+  var promedio = 0;
+  arrayIndicador.forEach((i) => {
+    promedio += ((i.data.value *100) /  i.goal.value);
+  });
+  return promedio / arrayIndicador.length;
+};
+
+router.get("/graph/data/:id/:refEje", auth, async (req, res) => {
+  const id = req.params.id;
+  const refEje= req.params.refEje
+  const datos = await dataSubEjes(id).then((res) => {
+    return res;
+  });
+  console.log(datos);
+  const respuesta ={refEje: refEje, kpi:datos}
+  res.status(200).send(respuesta);
+});
 module.exports = router;
