@@ -227,7 +227,7 @@ router.put("/entities/load/dataIndicator", auth, async (req, res) => {
       },
     })
     .then((response) => {
-      addHistoricalValue(req.body.id)
+      addHistoricalValue(req.body.id);
       res.status(200).send(response);
     });
 });
@@ -248,38 +248,34 @@ router.put(
         ? { description: { type: "Text", value: req.body.description } }
         : {}),
     });
-    console.log(res);
     res.status(200).send(response);
   })
 );
 
 async function addHistoricalValue(entityId) {
-
-  let today = new Date();   
-  let date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-  let time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+  let today = new Date();
+  let date =
+    today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
+  let time =
+    today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
 
   const indicator = await connection.v2
     .getEntity({ id: entityId, keyValues: true })
     .then((response) => {
       return response.entity;
     });
-  // console.log("---Entidad---");
-  // console.log(indicator);
+
   const subEje = await connection.v2
     .getEntity({ id: indicator.refSubEje, keyValues: true })
     .then((res) => {
       return res.entity;
     });
-  // console.log("---subEje---");
-  // console.log(subEje);
+
   const eje = await connection.v2
     .getEntity({ id: subEje.refEje, keyValues: true })
     .then((res) => {
       return res.entity;
     });
-  // console.log("---Eje---");
-  // console.log(eje);
 
   const newValue = {
     refEje: eje.name,
@@ -291,10 +287,83 @@ async function addHistoricalValue(entityId) {
     goalDate: indicator.goalDate,
   };
 
-  // console.log("NEW VALUE TO SAVE");
-  // console.log(newValue);
-
   fiwareData.addIndicator(newValue);
 }
+
+//Endpoins Grafico
+router.get("/graph/labels/:id", auth, async (req, res) => {
+  const id = req.params.id;
+  const arrDatos = await buscarMunicipio(id).then((response) => {
+    return response;
+  });
+  res.status(200).send(arrDatos);
+});
+
+router.get("/graph/subEjes/:id", auth, async (req, res) => {
+  const id = req.params.id;
+  const subEjes = await buscarSubEjes(id).then((response) => {
+    return response;
+  });
+  res.status(200).send(subEjes);
+});
+
+router.get("/graph/data/:id/:refEje", auth, async (req, res) => {
+  const id = req.params.id;
+  const refEje = req.params.refEje;
+  const datos = await dataSubEjes(id).then((res) => {
+    return res;
+  });
+  const respuesta = { refEje: refEje, kpi: datos };
+  res.status(200).send(respuesta);
+});
+
+// Funciones Auxiliares graficos(habira que mandarlas a otro archivo y exportarlas)
+
+const buscarMunicipio = async (id) => {
+  const arr = [];
+  const muni = await connection.v2
+    .listEntities({ q: "refMunicipio==" + id })
+    .then((response) => {
+      return response.results;
+    });
+  await dataMunicipio(muni, arr);
+  return arr;
+};
+
+const dataMunicipio = async (municipio, arr) => {
+  await municipio.forEach((eje) => {
+    arr.push({ label: eje.name.value, id: "refEje==" + eje.id });
+  });
+};
+
+const buscarSubEjes = async (id) => {
+  const subEjes = await connection.v2
+    .listEntities({ q: id })
+    .then((response) => {
+      return response.results;
+    });
+  const data = subEjes.map((subEje) => {
+    return { refEje: id, id: "refSubEje==" + subEje.id };
+  });
+  return data;
+};
+
+const dataSubEjes = async (id) => {
+  const datoKpi = await connection.v2
+    .listEntities({ q: id })
+    .then((response) => {
+      return kpi(response.results);
+    });
+
+  return datoKpi;
+};
+
+const kpi = (arrayIndicador) => {
+  var promedio = 0;
+  arrayIndicador.forEach((i) => {
+    promedio += (i.data.value * 100) / i.goal.value;
+  });
+  return promedio / arrayIndicador.length;
+};
 
 module.exports = router;
