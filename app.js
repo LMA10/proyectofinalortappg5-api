@@ -5,6 +5,8 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors')
+const swaggerUi = require('swagger-ui-express')
+const swaggerFile = require('./swagger_output.json')
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -30,6 +32,7 @@ app.use('/users', usersRouter);
 app.use('/roles', rolesRouter);
 app.use('/fiware', fiwareRouter);
 
+app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile))
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));

@@ -22,6 +22,8 @@
     "morgan": "~1.9.1",
     "ngsijs": "^1.4.1",
     "nodemon": "^2.0.14",
+    "swagger-autogen": "^2.12.6",
+    "swagger-ui-express": "^4.1.6",
     "uuid": "^8.3.2"
   }
 }
