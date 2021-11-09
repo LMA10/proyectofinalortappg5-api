@@ -1,3 +1,8 @@
+const NGSI = require("ngsijs");
+const conVM = process.env.URL_VM_ORION;
+const connection = new NGSI.Connection(`${conVM}`);
+const fiwareData = require("../data/indicator");
+
 const buscarMunicipio = async (id) => {
     const arr = [];
     const muni = await connection.v2
