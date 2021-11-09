@@ -116,4 +116,26 @@ router.delete("/:id", auth, async (req, res) => {
   }
 });
 
+//Change Users Password
+
+router.put("/change/password", auth, async (req, res) =>{
+  const schemaUpdate = joi.object({    
+    password: joi.string().alphanum().min(6),
+    new_password: joi.string().alphanum().min(6),    
+  });
+  const result = schemaUpdate.validate({
+    password: req.body.password,
+    new_password : req.body.newPassword,
+  });
+
+  if (result.error) {
+    res.status(400).send(result.error.details[0].message);
+  } else {       
+    user = await data.changePassword(req.body.email, req.body.password, req.body.newPassword);
+    user.message ? res.status(404).send("Usuario no encontrado") : res.json(user);
+  }
+    
+
+})
+
 module.exports = router;
