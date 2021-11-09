@@ -20,8 +20,12 @@ const userSchema = new Schema({
   },
   usRole: {
     // Chequear type -> moongose.Schema.Type.ObjectId
-    type: String,
-    ref: "Role",
+    type: Object,
+    required: true
+  },
+  usMunicipio: {
+    // Chequear type -> moongose.Schema.Type.ObjectId
+    type: Object,
     required: true
   },
   usActive: {

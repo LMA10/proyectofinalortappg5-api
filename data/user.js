@@ -26,7 +26,6 @@ async function getAllDisabledUsers() {
 async function addUser(user) {
   await connection.getConnection();
   user.usEmail = user.usEmail.toLowerCase();
-
   if (!(await addUserEmailValidation(user))) {
     user.usPasswordHash = await bcrypt.hash(user.usPasswordHash, 8);
     const newUser = await new userModel.UserModel(user);
@@ -78,6 +77,7 @@ async function login(email, password) {
       usEmail: user.usEmail,
       usRole: user.usRole,
       usActive: user.usActive,
+      usMunicipio: user.usMunicipio
     };
 
     return userToSend;

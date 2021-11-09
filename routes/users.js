@@ -30,6 +30,7 @@ router.post("/", async (req, res) => {
     usPasswordHash: joi.string().alphanum().min(6).required(),
     usActive: joi.required(),
     usRole: joi.required(),
+    usMunicipio: joi.required(),
   });
 
   const result = schemaPost.validate(req.body);
@@ -98,11 +99,11 @@ router.post("/:id", auth, async (req, res) => {
 });
 
 router.put("/enable/:id", auth, async function (req, res, next) {
-  try{
+  try {
     const user = await data.updateUser(req.params.id);
     res.json(user);
-  }catch(err){
-    console.log(err)
+  } catch (err) {
+    console.log(err);
   }
 });
 
