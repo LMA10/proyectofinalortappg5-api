@@ -45,7 +45,7 @@ async function getUser(userId) {
 async function updateUser(userId) {
   console.log(userId)
   await connection.getConnection();
-  let userById = await userModel.UserModel.findById({_id: userId});
+  let userById = await userModel.UserModel.findById({ _id: userId });
   console.log("Searching")
   console.log(userById)
   userById.usActive = true;
@@ -89,6 +89,26 @@ function generateAuthToken(user) {
   return token;
 }
 
+async function changePassword(email, password, newPassword) {
+  await connection.getConnection();  
+  try {
+    let users = await getAllUsers();
+    let user = users.find((e) => e.usEmail == email);
+    let isMatch = await bcrypt.compare(password, user.usPasswordHash);
+    if (!isMatch) {
+      throw new Error("Ups! Algo ha salido mal!");
+    } else {
+      let newPasswordHash = await bcrypt.hash(newPassword, 8)
+      user.usPasswordHash = newPasswordHash;
+      user.save();
+      return user;
+    }
+  }catch(Error){
+    return Error;
+  }
+  
+}
+
 module.exports = {
   getAllUsers,
   addUser,
@@ -98,4 +118,5 @@ module.exports = {
   login,
   generateAuthToken,
   getAllDisabledUsers,
+  changePassword,
 };
