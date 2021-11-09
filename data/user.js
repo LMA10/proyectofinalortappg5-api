@@ -108,7 +108,7 @@ async function changePassword(email, password, newPassword) {
       return user;
     }
   } catch (Error) {
-    return Error;
+    throw Error;
   }
 }
 
