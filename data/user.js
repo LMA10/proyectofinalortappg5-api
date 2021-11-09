@@ -43,12 +43,16 @@ async function getUser(userId) {
 }
 
 async function updateUser(userId) {
-  console.log(userId)
+  console.log(userId);
   await connection.getConnection();
   let userById = await userModel.UserModel.findById({ _id: userId });
-  console.log("Searching")
-  console.log(userById)
-  userById.usActive = true;
+  console.log("Searching");
+  console.log(userById);
+  if (userById.usActive) {
+    userById.usActive = false;
+  } else {
+    userById.usActive = true;
+  }
   userById.save();
   return userById;
 }
@@ -77,7 +81,7 @@ async function login(email, password) {
       usEmail: user.usEmail,
       usRole: user.usRole,
       usActive: user.usActive,
-      usMunicipio: user.usMunicipio
+      usMunicipio: user.usMunicipio,
     };
 
     return userToSend;
@@ -90,7 +94,7 @@ function generateAuthToken(user) {
 }
 
 async function changePassword(email, password, newPassword) {
-  await connection.getConnection();  
+  await connection.getConnection();
   try {
     let users = await getAllUsers();
     let user = users.find((e) => e.usEmail == email);
@@ -98,15 +102,14 @@ async function changePassword(email, password, newPassword) {
     if (!isMatch) {
       throw new Error("Ups! Algo ha salido mal!");
     } else {
-      let newPasswordHash = await bcrypt.hash(newPassword, 8)
+      let newPasswordHash = await bcrypt.hash(newPassword, 8);
       user.usPasswordHash = newPasswordHash;
       user.save();
       return user;
     }
-  }catch(Error){
+  } catch (Error) {
     return Error;
   }
-  
 }
 
 module.exports = {

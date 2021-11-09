@@ -25,8 +25,7 @@ const userSchema = new Schema({
   },
   usMunicipio: {
     // Chequear type -> moongose.Schema.Type.ObjectId
-    type: Object,
-    required: true
+    type: Object
   },
   usActive: {
     type: Boolean,
