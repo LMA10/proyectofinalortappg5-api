@@ -3,7 +3,13 @@ const indicatorModel = require("./schemas/indicator");
 
 async function getHistoricalIndicators() {
   await connection.getConnection();
-  const indicators = await indicatorModel.IndicatorModel.find({});
+  const indicators = await indicatorModel.IndicatorModel.find({}).sort("refEje");
+  return indicators;
+}
+
+async function getHistoricalIndicatorsByMunicipio(municipioId) {
+  await connection.getConnection();
+  const indicators = await indicatorModel.IndicatorModel.find({refMunicipio: municipioId});
   return indicators;
 }
 
@@ -22,4 +28,4 @@ async function getIndicator(indicatorId) {
   return indicatorById;
 }
 
-module.exports = { getHistoricalIndicators, addIndicator, getIndicator };
+module.exports = { getHistoricalIndicators, getHistoricalIndicatorsByMunicipio, addIndicator, getIndicator };

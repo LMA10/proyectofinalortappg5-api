@@ -21,14 +21,18 @@ const indicatorSchema = new Schema({
     type: Date,
     required: true,
   },
-  refSubEje : {
+  refSubEje: {
     type: String,
-    required: true
+    required: true,
   },
-  refEje : {
+  refEje: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
+  refMunicipio: {
+    type: String,
+    required: true,
+  },
 });
 
 const IndicatorModel = model("Indicator", indicatorSchema, "indicators");

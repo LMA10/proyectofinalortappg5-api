@@ -74,6 +74,7 @@ const buscarMunicipio = async (id) => {
       });
   
     const newValue = {
+      refMunicipio: eje.refMunicipio,
       refEje: eje.name,
       refSubEje: subEje.name,
       indicatorName: indicator.name,

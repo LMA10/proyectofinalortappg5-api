@@ -42,6 +42,12 @@ router.get("/historical", auth, async (req, res) => {
   res.send(historical);
 });
 
+router.get("/historical/:id", auth, async (req, res) => {
+  console.log(req.params.id)
+  const historical = await fiwareData.getHistoricalIndicatorsByMunicipio(req.params.id);
+  res.send(historical);
+});
+
 router.get("/entities/type/:type", auth, async (req, res) => {
   let arr = [];
   let type = req.params.type;
