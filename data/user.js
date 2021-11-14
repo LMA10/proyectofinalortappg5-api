@@ -23,6 +23,12 @@ async function getAllDisabledUsers() {
   return users;
 }
 
+async function updateUser(usr){
+  await connection.getConnection();
+  const user = await userModel.UserModel.find({_id : usr._id})
+  console.log(user)
+}
+
 async function addUser(user) {
   await connection.getConnection();
   user.usEmail = user.usEmail.toLowerCase();
@@ -42,7 +48,7 @@ async function getUser(userId) {
   return userById;
 }
 
-async function updateUser(userId) {
+async function changeStateUser(userId) {
   console.log(userId);
   await connection.getConnection();
   let userById = await userModel.UserModel.findById({ _id: userId });
@@ -117,6 +123,7 @@ module.exports = {
   addUser,
   getUser,
   updateUser,
+  changeStateUser,
   deleteUser,
   login,
   generateAuthToken,

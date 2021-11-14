@@ -79,28 +79,40 @@ router.post("/login", async (req, res) => {
 });
 
 //Update User
-router.post("/:id", auth, async (req, res) => {
-  const schemaUpdate = joi.object({
-    email: joi.string().email({ minDomainSegments: 2, tlds: true }),
-    password: joi.string().alphanum().min(6),
-    repeat_password: joi.ref("password"),
-    state: joi.required(),
+router.put("/", async (req, res) => {
+  const schemaPut = joi.object({
+    usEmail: joi
+      .string()
+      .email({ minDomainSegments: 2, tlds: true })
+      .required(),
+    usName: joi.string().pattern(new RegExp("^[a-zA-Z]{3,30}$")).required(),
+    usLastName: joi.string().pattern(new RegExp("^[a-zA-Z]{3,30}$")).required(),
+    usPasswordHash: joi.string().alphanum().min(6).required(),
+    usActive: joi.required(),
+    usRole: joi.required(),
+    usMunicipio: joi.required(),
   });
-  const result = schemaUpdate.validate(req.body);
+
+  const result = schemaPut.validate(req.body);
+  console.log("result:");
+  console.log(result);
 
   if (result.error) {
     res.status(400).send(result.error.details[0].message);
   } else {
-    let user = req.body;
-    user._id = req.params.id;
-    user = await data.updateUser(user);
-    res.json(user);
+    try {
+      let user = req.body;
+      await data.updateUser(user);
+      res.status(201).send();
+    } catch (error) {
+      res.status(401).send(error.message);
+    }
   }
 });
 
 router.put("/enable/:id", auth, async function (req, res, next) {
   try {
-    const user = await data.updateUser(req.params.id);
+    const user = await data.changeStateUser(req.params.id);
     res.json(user);
   } catch (err) {
     console.log(err);
@@ -109,33 +121,39 @@ router.put("/enable/:id", auth, async function (req, res, next) {
 
 //Delete User
 router.delete("/:id", auth, async (req, res) => {
-  if (!user) {
-    res.status(404).send("Usuario no encontrado");
-  } else {
-    data.deleteUser(req.params.id);
-    res.status(200).send("Usuario eliminado");
+  try {
+    const user = await data.getUser(req.params.id);
+    if (!user) {
+      res.status(404).send("Usuario no encontrado");
+    } else {
+      data.deleteUser(req.params.id);
+      res.status(200).send("Usuario eliminado");
+    }
+  } catch (err) {
+    console.log(err);
   }
 });
 
 //Change Users Password
 
-router.put("/change/password", auth, async (req, res) =>{
-  const schemaUpdate = joi.object({    
+router.put("/change/password", auth, async (req, res) => {
+  const schemaUpdate = joi.object({
     password: joi.string().alphanum().min(6),
-    new_password: joi.string().alphanum().min(6),    
+    new_password: joi.string().alphanum().min(6),
   });
   const result = schemaUpdate.validate({
     password: req.body.password,
-    new_password : req.body.newPassword,
+    new_password: req.body.newPassword,
   });
 
   if (result.error) {
     res.status(400).send(result.error.details[0].message);
-  } else {       
-    await data.changePassword(req.body.email, req.body.password, req.body.newPassword)
-    .then((response) => res.status(200).send(response))
-    .catch((error) => res.status(400).send(error))
-    }
-})
+  } else {
+    await data
+      .changePassword(req.body.email, req.body.password, req.body.newPassword)
+      .then((response) => res.status(200).send(response))
+      .catch((error) => res.status(400).send(error));
+  }
+});
 
 module.exports = router;
