@@ -80,17 +80,17 @@ router.post("/login", async (req, res) => {
 
 //Update User
 router.put("/", async (req, res) => {
-  const schemaPut = joi.object({
+  const schemaPut = joi.object({    
     usEmail: joi
       .string()
       .email({ minDomainSegments: 2, tlds: true })
       .required(),
     usName: joi.string().pattern(new RegExp("^[a-zA-Z]{3,30}$")).required(),
     usLastName: joi.string().pattern(new RegExp("^[a-zA-Z]{3,30}$")).required(),
-    usPasswordHash: joi.string().alphanum().min(6).required(),
     usActive: joi.required(),
     usRole: joi.required(),
     usMunicipio: joi.required(),
+    _id: joi.required(),
   });
 
   const result = schemaPut.validate(req.body);
@@ -103,7 +103,7 @@ router.put("/", async (req, res) => {
     try {
       let user = req.body;
       await data.updateUser(user);
-      res.status(201).send();
+      res.status(200).send();
     } catch (error) {
       res.status(401).send(error.message);
     }
