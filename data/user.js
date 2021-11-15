@@ -23,10 +23,14 @@ async function getAllDisabledUsers() {
   return users;
 }
 
-async function updateUser(usr){
-  await connection.getConnection();
-  const user = await userModel.UserModel.find({_id : usr._id})
-  console.log(user)
+async function updateUser(user){
+  await connection.getConnection();  
+  let usuario = await userModel.UserModel.findById(user._id);  
+  usuario.usEmail = user.usEmail
+  usuario.usName = user.usName
+  usuario.usLastName = user.usLastName
+  usuario.save()  
+  
 }
 
 async function addUser(user) {
