@@ -25,9 +25,9 @@ router.post("/", async (req, res) => {
       .string()
       .email({ minDomainSegments: 2, tlds: true })
       .required(),
-    usName: joi.string().pattern(new RegExp("^[a-zA-Z]{3,30}$")).required(),
-    usLastName: joi.string().pattern(new RegExp("^[a-zA-Z]{3,30}$")).required(),
-    usPasswordHash: joi.string().alphanum().min(6).required(),
+    usName: joi.string().pattern(new RegExp("^[a-zA-ZáéíóúáéíóÁÉÍÓÚÑñ]{2,40}$")).required(),
+    usLastName: joi.string().pattern(new RegExp("^[a-zA-ZáéíóúáéíóÁÉÍÓÚÑñ]{2,40}$")).required(),
+    usPasswordHash: joi.string().alphanum().min(6).max(20).required(),
     usActive: joi.required(),
     usRole: joi.required(),
     usMunicipio: joi.required(),
@@ -42,8 +42,12 @@ router.post("/", async (req, res) => {
   } else {
     try {
       let user = req.body;
-      await data.addUser(user);
-      res.status(201).send();
+      if(data.validateMunicipio(user.usMunicipio) && data.validateRol(user.usRole)){
+        await data.addUser(user);
+        res.status(201).send();
+      }else {
+        throw new Error("Operacion no permitida")
+      }
     } catch (error) {
       res.status(401).send(error.message);
     }

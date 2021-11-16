@@ -1,9 +1,11 @@
 const connection = require("./connection");
 const userModel = require("./schemas/user");
+const roleModel = require("./schemas/role");
 const bcrypt = require("bcryptjs");
 const messages = require("../constants/messages");
 const jwt = require("jsonwebtoken");
 const tokenPass = process.env.SECRET;
+const helper = require("../helpers/fiwareHelpers")
 
 async function addUserEmailValidation(user) {
   let users = await getAllUsers();
@@ -46,6 +48,17 @@ async function addUser(user) {
   }
 }
 
+async function validateRol(rolDesc){
+  await connection.getConnection();
+  let rol = await new roleModel.RoleModel.find({roDescription : rolDesc})
+  return rol;
+}
+
+async function validateMunicipio(idMunicipio){
+  await connection.getConnection();
+  return await helper.buscarMunicipioPorId(idMunicipio)
+}
+
 async function getUser(userId) {
   await connection.getConnection();
   const userById = await userModel.UserModel.findById(userId);
@@ -74,7 +87,8 @@ async function deleteUser(userId) {
 
 async function login(email, password) {
   await connection.getConnection();
-  const user = await userModel.UserModel.findOne({ usEmail: email });
+
+  const user = await userModel.UserModel.findOne({ usEmail: email.toLowerCase() });
 
   console.log("Email retrieved from login: ", user);
   if (!user) {
@@ -133,4 +147,7 @@ module.exports = {
   generateAuthToken,
   getAllDisabledUsers,
   changePassword,
+  validateMunicipio,
+  validateRol
+
 };
