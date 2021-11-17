@@ -81,8 +81,8 @@ router.put("/", async (req, res) => {
       .string()
       .email({ minDomainSegments: 2, tlds: true })
       .required(),
-    usName: joi.string().pattern(new RegExp("^[a-zA-Z]{3,30}$")).required(),
-    usLastName: joi.string().pattern(new RegExp("^[a-zA-Z]{3,30}$")).required(),
+    usName: joi.string().pattern(new RegExp("^[a-zA-ZáéíóúáéíóÁÉÍÓÚÑñ]{2,40}$")).required(),
+    usLastName: joi.string().pattern(new RegExp("^[a-zA-ZáéíóúáéíóÁÉÍÓÚÑñ]{2,40}$")).required(),
     usActive: joi.required(),
     usRole: joi.required(),
     usMunicipio: joi.required(),
