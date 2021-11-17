@@ -5,16 +5,13 @@ const auth = require("../middleware/auth");
 const joi = require("joi");
 
 // Get All Users
-
 router.get("/", auth, async function (req, res, next) {
   const users = await data.getAllUsers();
-  console.log(users);
   res.send(users);
 });
 
 router.get("/disabled", auth, async function (req, res, next) {
   const users = await data.getAllDisabledUsers();
-  console.log(users);
   res.send(users);
 });
 
@@ -34,8 +31,6 @@ router.post("/", async (req, res) => {
   });
 
   const result = schemaPost.validate(req.body);
-  console.log("result:");
-  console.log(result);
 
   if (result.error) {
     res.status(400).send(result.error.details[0].message);
@@ -70,12 +65,9 @@ router.get("/:id", auth, async (req, res) => {
 
 //Login User
 router.post("/login", async (req, res) => {
-  console.log("Login Started");
   try {
     const user = await data.login(req.body.usEmail, req.body.usPasswordHash);
-    console.log(user);
     const token = data.generateAuthToken(user);
-    console.log(token);
     res.status(200).send({ user, token });
   } catch (error) {
     res.status(401).send(error.message);
@@ -98,8 +90,6 @@ router.put("/", async (req, res) => {
   });
 
   const result = schemaPut.validate(req.body);
-  console.log("result:");
-  console.log(result);
 
   if (result.error) {
     res.status(400).send(result.error.details[0].message);
