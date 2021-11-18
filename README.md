@@ -73,3 +73,7 @@ Por ultimo, si le interesa ser parte del proyecto, no dude en solicitar las cred
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
+
+## Contactos
+- leonardoadamini@gmail.com
+- sebastian.cea@ort.edu.ar
